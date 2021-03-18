@@ -1,4 +1,7 @@
 # Python Async WebDAV Client
+![PyPI](https://img.shields.io/pypi/v/aiodav)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiodav)
+
 A asynchronous WebDAV client that use `asyncio` 
 
 > Based on [webdavclient3](https://github.com/ezhov-evgeny/webdav-client-python-3)

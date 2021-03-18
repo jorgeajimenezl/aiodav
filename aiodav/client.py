@@ -92,10 +92,6 @@ class Client(object):
         password: Optional[str] = None,
         token: Optional[str] = None,
         root: Optional[str] = ROOT,
-        # cert_path: Optional[Union[str, "os.PathLike[str]"]] = None,
-        # key_path: Optional[Union[str, "os.PathLike[str]"]] = None,
-        # recv_speed: Optional[int] = None,
-        # send_speed: Optional[int] = None,
         timeout: Optional[int] = None,
         chunk_size: Optional[int] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
@@ -104,8 +100,6 @@ class Client(object):
         self._hostname = hostname.rstrip(Urn.separate)
         self._token = token
         self._root = (Urn(root).quote() if root else '').rstrip(Urn.separate)
-        # self._cert_path = cert_path
-        # self._key_path = key_path
         self._chunk_size = chunk_size if chunk_size else 65536
         self.session = aiohttp.ClientSession(
             loop = loop,
@@ -191,6 +185,9 @@ class Client(object):
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
+        """
+        Unable to call because you must use asyn with statement
+        """
         pass
 
     async def __aenter__(self) -> "Client":
@@ -440,9 +437,12 @@ class Client(object):
         if not (await self.exists(urn_to.parent())):
             raise RemoteParentNotFound(urn_to.path())
 
-        header_destination = f"Destination: {self._get_url(urn_to.quote())}"
-        header_overwrite = f"Overwrite: {'T' if overwrite else 'F'}"
-        await self._execute_request(action='move', path=urn_from.quote(), headers_ext=[header_destination, header_overwrite])
+        headers = {
+            'Destination': self._get_url(urn_to.quote()),
+            'Overwrite': ('T' if overwrite else 'F')
+        }
+
+        await self._execute_request(action='move', path=urn_from.quote(), headers_ext=headers)
 
     async def copy(
         self,

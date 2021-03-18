@@ -1,8 +1,5 @@
 import re
-
 from setuptools import setup, find_packages
-# from setuptools.command.install import install as InstallCommand
-# from setuptools.command.test import test as TestCommand
 
 with open('aiodav/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -11,12 +8,12 @@ with open('aiodav/__init__.py', 'r') as fd:
 with open('requirements.txt', 'r') as file:                        
     INSTALL_REQUIRES = file.readlines()
 
-with open('README.md', 'r') as readme:
+with open('README.md') as readme:
     setup(
         name='aiodav',
         version=version,
         description="A Python Async WebDAV Client",
-        long_description=ascii(readme.read()),
+        long_description=readme.read(),
         long_description_content_type='text/markdown',
         license="MIT License",
         author="Jorge Alejandro Jimenez Luna",
