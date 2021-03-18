@@ -24,7 +24,7 @@ with open('README.md', 'r') as readme:
         url="https://github.com/jorgeajimenezl/aiodav",
         classifiers=[
             "Intended Audience :: Developers",
-            "License :: MIT License",
+            "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
             "Programming Language :: Python",
             "Programming Language :: Python :: 3.5",
@@ -32,7 +32,6 @@ with open('README.md', 'r') as readme:
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
-            "Topic :: Internet :: Downloader",
         ],
         keywords="webdav, client, files, internet, download, upload",
         install_requires=INSTALL_REQUIRES,
