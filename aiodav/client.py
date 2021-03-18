@@ -3,7 +3,7 @@ import asyncio
 import os
 import shutil
 from types import TracebackType
-from typing import Any, Callable, Dict, Generator, IO, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Generator, IO, Iterable, Optional, Tuple, Type, Union
 from aiofiles.threadpool.binary import AsyncBufferedIOBase
 
 import aiohttp, aiofiles
@@ -11,7 +11,6 @@ from aiohttp.client import DEFAULT_TIMEOUT
 
 from aiodav.utils import WebDavXmlUtils
 from aiodav.urn import Urn
-from aiodav.resource import Resource
 from aiodav.exceptions import *
 
 log = logging.getLogger(__name__)
@@ -1094,3 +1093,125 @@ class Client(object):
 
         urn = Urn(path)
         return Resource(self, urn)  
+
+class Resource(object):
+    """
+    Remote resource.
+    """
+
+    def __init__(
+        self, 
+        client: Client, 
+        urn: Urn
+    ) -> None:
+        self.client = client
+        self.urn = urn
+
+    def __str__(self) -> str:
+        return f"resource {self.urn.path()}"
+
+    async def is_directory(self) -> bool:
+        """
+        Determine if the resource is a directory.
+
+        Returns:
+            :obj:`bool`: True if the resource is a directory or False else.
+        """
+        return await self.client.is_directory(self.urn.path())
+
+    async def rename(
+        self, 
+        name: str
+    ) -> None:
+        """
+        Rename the resource.
+
+        Parameters:    
+            name (``str``):
+                New name to resource.
+        """
+        old_path = self.urn.path()
+        parent_path = self.urn.parent()
+        name = Urn(name).filename()
+        new_path = f"{parent_path}{name}"
+
+        await self.client.move(source=old_path, destination=new_path)
+        self.urn = Urn(new_path)
+
+    async def move(
+        self, 
+        path: Union[str, "os.PathLike[str]"]
+    ) -> None:
+        """
+        Move the resource to new path.
+
+        Parameters:    
+            path (``str``):
+                New path of the resource.
+        """
+        new_urn = Urn(path)
+        await self.client.move(source=self.urn.path(), destination=new_urn.path())
+        self.urn = new_urn
+
+    async def copy(
+        self,
+        path: Union[str, "os.PathLike[str]"]
+    ) -> "Resource":
+        """
+        Copy the resource to a another path.
+
+        Parameters:    
+            path (``str``):
+                The path where resource will be copied.
+
+        Returns:
+            :obj:`Resource`: The value of property or None if property is not found.
+        """
+        urn = Urn(path)
+        await self.client.copy(source=self.urn.path(), destination=path)
+        return Resource(self.client, urn)
+
+    async def info(
+        self, 
+        filter: Optional[Iterable[str]] = None
+    ) -> dict[str, str]:
+        """
+        Get a dictionary with resource information.
+
+        Parameters:    
+            filter (``Iterable[str]``, *optional*):
+                If filter is not `None` then only return properties
+                contained in filter iterable.
+
+        Returns:
+            :obj:`dict[str, str]`: Information about the resource
+        """
+
+        info = await self.client.info(self.urn.path())
+        if not filter:
+            return info
+        return {key: value for (key, value) in info.items() if key in filter}
+
+    async def unlink(self) -> None:
+        """
+        Delete the resource.
+        """
+
+        await self.client.unlink(self.urn.path())
+
+    async def delete(self):
+        """
+        Delete the resource.
+        """
+
+        await self.unlink()
+
+    async def exists(self) -> bool:
+        """
+        Determine if the resource exists in the remote WebDAV server
+
+        Returns:
+            :obj:`bool`: True if the resource exists else return False.
+        """
+
+        return await self.client.exists(self.urn.path())
