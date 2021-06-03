@@ -187,9 +187,9 @@ class Client(object):
                 raise ResponseErrorCode(url=self._get_url(path), code=response.status, message=response.content)
 
             return response
-        except aiohttp.ConnectionError:
+        except aiohttp.ClientConnectionError:
             raise NoConnection(self._hostname)
-        except aiohttp.RequestException as re:
+        except aiohttp.ClientResponseError as re:
             raise ConnectionException(re)
         except Exception as e:
             raise e
