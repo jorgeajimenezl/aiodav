@@ -22,9 +22,6 @@ $ pip install -e .
 ```
 
 ## Getting started
-By defult when you add task to queue the service is detected and use anonymous 
-login if necessary
-
 ```python
 from aiodav import Client
 import asyncio
