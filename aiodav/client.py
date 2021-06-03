@@ -3,7 +3,7 @@ import asyncio
 import os
 import shutil
 from types import TracebackType
-from typing import Any, Callable, Dict, Generator, IO, Iterable, Optional, Tuple, Type, Union
+from typing import Any, AsyncGenerator, Callable, Coroutine, Dict, Generator, IO, Iterable, Optional, Tuple, Type, Union
 from aiofiles.threadpool.binary import AsyncBufferedIOBase
 
 import aiohttp, aiofiles
@@ -39,6 +39,18 @@ class Client(object):
         timeout (``int``, *optional*):
             Time limit for all operations. Default is 300 (5 min).
 
+        insecure (``bool``, *optional*):
+            Allow insecure server connections when using SSL. Default is False.
+
+        proxy (``str``, *optional*):
+            Use this proxy with format [protocol://]host[:port]. Ex: http://localhost:3128
+
+        proxy_user (``str``, *optional*):
+            Set a user to use in proxy authentication.
+
+        proxy_password (``str``, *optional*):
+            Set a password to use in proxy authentication.
+
         chunk_size (``int``, *optional*):
             Size of buffer used to transfer data from/to server. This data will be 
             loaded in memory. This parameter afect the progress callback in 
@@ -46,9 +58,6 @@ class Client(object):
     """
 
     ROOT = '/'
-
-    # controls whether to verify the server's TLS certificate or not
-    VERIFY = True
 
     # HTTP headers for different actions
     DEFAULT_HTTP_HEADER = {
@@ -93,6 +102,10 @@ class Client(object):
         root: Optional[str] = ROOT,
         timeout: Optional[int] = None,
         chunk_size: Optional[int] = None,
+        proxy: Optional[str] = None,
+        proxy_user: Optional[str] = None,
+        proxy_password: Optional[str] = None,
+        insecure: Optional[bool] = False,
         loop: Optional[asyncio.AbstractEventLoop] = None,
         **kwargs: Any
     ) -> None:
@@ -100,6 +113,10 @@ class Client(object):
         self._token = token
         self._root = (Urn(root).quote() if root else '').rstrip(Urn.separate)
         self._chunk_size = chunk_size if chunk_size else 65536
+        self._proxy = proxy
+        self._proxy_auth = aiohttp.BasicAuth(proxy_user, proxy_password) if (
+                proxy_user and proxy_password) else None
+        self._insecure = insecure
         self.session = aiohttp.ClientSession(
             loop = loop,
             timeout = aiohttp.ClientTimeout(total=timeout) if timeout else DEFAULT_TIMEOUT,
@@ -154,8 +171,10 @@ class Client(object):
                 url = self._get_url(path),
                 headers = self._get_headers(action, headers_ext),
                 data = data,
+                proxy = self._proxy,
+                proxy_auth = self._proxy_auth,
                 # chunked = self._chunk_size,
-                # ssl = 
+                ssl = False if self._insecure else None
             )
 
             if response.status == 507:
@@ -760,7 +779,7 @@ class Client(object):
     async def upload_to(
         self,
         path: Union[str, "os.PathLike[str]"],
-        buffer: IO,
+        buffer: Union[IO, AsyncGenerator[bytes, None]],
         buffer_size: Optional[int] = None,
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = ()
@@ -774,7 +793,8 @@ class Client(object):
                 The path to remote resource
 
             buffer (``IO``)
-                IO like object to read the data.
+                IO like object to read the data or a asynchronous generator to get buffer data.
+                In order do you select use a async generator `progress` callback cannot be called.
 
             progress (``callable``, *optional*):
                 Pass a callback function to view the file transmission progress.
@@ -815,31 +835,31 @@ class Client(object):
             raise OptionNotValid(name="path", value=path)
 
         if not (await self.exists(urn.parent())):
-            raise RemoteParentNotFound(urn.path())
+            raise RemoteParentNotFound(urn.path())      
         
-        async def file_sender(buff: IO):
-            current = 0
-            
-            if asyncio.iscoroutinefunction(progress):
-                await progress(current, buffer_size, *progress_args)
-            else:
-                progress(current, buffer_size, *progress_args)
-
-            while current < buffer_size:
-                chunk = await buffer.read(self._chunk_size) if isinstance(buffer, AsyncBufferedIOBase) \
-                    else buffer.read(self._chunk_size)
-                if not chunk:
-                    break
-                
-                current += len(chunk)
+        if callable(progress) and not asyncio.iscoroutinefunction(buffer):
+            async def file_sender(buff: IO):
+                current = 0
                 
                 if asyncio.iscoroutinefunction(progress):
                     await progress(current, buffer_size, *progress_args)
                 else:
                     progress(current, buffer_size, *progress_args)
-                yield chunk                
 
-        if callable(progress):
+                while current < buffer_size:
+                    chunk = await buffer.read(self._chunk_size) if isinstance(buffer, AsyncBufferedIOBase) \
+                        else buffer.read(self._chunk_size)
+                    if not chunk:
+                        break
+                    
+                    current += len(chunk)
+                    
+                    if asyncio.iscoroutinefunction(progress):
+                        await progress(current, buffer_size, *progress_args)
+                    else:
+                        progress(current, buffer_size, *progress_args)
+                    yield chunk                
+
             await self._execute_request(action='upload', path=urn.quote(), data=file_sender(buffer))
         else:
             await self._execute_request(action='upload', path=urn.quote(), data=buffer)
