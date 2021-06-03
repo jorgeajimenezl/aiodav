@@ -110,8 +110,8 @@ class Client(object):
     def _get_headers(
         self, 
         action: str, 
-        headers_ext: Optional[dict[str, str]] = None
-    ) -> dict[str, str]:
+        headers_ext: Optional[Dict[str, str]] = None
+    ) -> Dict[str, str]:
         headers = None
         if action in Client.DEFAULT_HTTP_HEADER:
             headers = dict([map(lambda s: s.strip(), x.split(':', 1)) for x in Client.DEFAULT_HTTP_HEADER[action]])
@@ -143,7 +143,7 @@ class Client(object):
         action: str,
         path: Union[str, "os.PathLike[str]"],
         data: Optional[Any] = None,
-        headers_ext: Optional[dict[str, str]] = None
+        headers_ext: Optional[Dict[str, str]] = None
     ) -> aiohttp.ClientResponse:
         try:
             if self.session.auth:
@@ -204,7 +204,7 @@ class Client(object):
         self,
         path: Optional[Union[str, "os.PathLike[str]"]] = ROOT,
         get_info: Optional[bool] = False
-    ) -> Union[list[str], list[dict[str, str]]]:
+    ) -> Union[list[str], list[Dict[str, str]]]:
         """
         Returns list of nested files and directories for remote WebDAV directory by path.
         More information you can find by link http://webdav.org/specs/rfc4918.html#METHOD_PROPFIN
@@ -217,7 +217,7 @@ class Client(object):
                 Set true to get more information like cmd 'ls -l'.
 
         Returns:
-            List of :obj:`str` | List of :obj:`dict[str, str]`: On success, if get_info=False it returns 
+            List of :obj:`str` | List of :obj:`Dict[str, str]`: On success, if get_info=False it returns 
                 list of nested file or directory names, otherwise it returns list of information, the 
                 information is a dictionary and it values with following keys:
 
@@ -347,7 +347,7 @@ class Client(object):
     async def info(
         self, 
         path: Union[str, "os.PathLike[str]"]
-    ) -> dict[str, str]:
+    ) -> Dict[str, str]:
         """
         Gets information about resource on WebDAV.
         More information you can find by link http://webdav.org/specs/rfc4918.html#METHOD_PROPFIND
@@ -357,7 +357,7 @@ class Client(object):
                 Path to remote resource.
 
         Returns:
-            :obj:`dict[str, str]`: a dictionary of information attributes and them values with following keys:
+            :obj:`Dict[str, str]`: a dictionary of information attributes and them values with following keys:
 
                 `created`: date of resource creation,
                 `name`: name of resource,
@@ -1015,7 +1015,7 @@ class Client(object):
     async def get_property(
         self,
         path: Union[str, "os.PathLike[str]"],
-        option: dict[str, str]
+        option: Dict[str, str]
     ) -> Union[str, None]:
         """
         Gets metadata property of remote resource on WebDAV server.
@@ -1025,7 +1025,7 @@ class Client(object):
             path (``str``):
                 Path to remote directory.
 
-            option (``dict[str, str]``): the property attribute as dictionary with following keys:
+            option (``Dict[str, str]``): the property attribute as dictionary with following keys:
                     `namespace`: (optional) the namespace for XML property which will be set,
                     `name`: the name of property which will be set.
 
@@ -1045,7 +1045,7 @@ class Client(object):
     async def set_property(
         self,
         path: Union[str, "os.PathLike[str]"],
-        option: dict[str, str]
+        option: Dict[str, str]
     ) -> None:
         """
         Sets metadata property of remote resource on WebDAV server.
@@ -1055,7 +1055,7 @@ class Client(object):
             path (``str``):
                 Path to remote directory.
 
-            option (``dict[str, str]``): the property attribute as dictionary with following keys:
+            option (``Dict[str, str]``): the property attribute as dictionary with following keys:
                     `namespace`: (optional) the namespace for XML property which will be set,
                     `name`: the name of property which will be set,
                     `value`: (optional) the value of property which will be set. Defaults is empty string.
@@ -1174,7 +1174,7 @@ class Resource(object):
     async def info(
         self, 
         filter: Optional[Iterable[str]] = None
-    ) -> dict[str, str]:
+    ) -> Dict[str, str]:
         """
         Get a dictionary with resource information.
 
@@ -1184,7 +1184,7 @@ class Resource(object):
                 contained in filter iterable.
 
         Returns:
-            :obj:`dict[str, str]`: Information about the resource
+            :obj:`Dict[str, str]`: Information about the resource
         """
 
         info = await self.client.info(self.urn.path())
