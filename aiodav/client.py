@@ -163,9 +163,6 @@ class Client(object):
         headers_ext: Optional[Dict[str, str]] = None
     ) -> aiohttp.ClientResponse:
         try:
-            if self.session.auth:
-                await self.session.get(url=self._hostname)  # (Re)Authenticates against the proxy
-
             response = await self.session.request(
                 method = Client.DEFAULT_REQUESTS[action],
                 url = self._get_url(path),
