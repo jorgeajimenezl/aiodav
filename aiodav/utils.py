@@ -26,7 +26,7 @@ class WebDavXmlUtils:
                  `path`: path of resource.
         """
         try:
-            tree = etree.fromstring(content)
+            tree = etree.fromstring(content.encode())
             infos = []
             for response in tree.findall(".//{DAV:}response"):
                 href_el = next(iter(response.findall(".//{DAV:}href")), None)
@@ -51,7 +51,7 @@ class WebDavXmlUtils:
         :return: list of extracted file or directory names.
         """
         try:
-            tree = etree.fromstring(content)
+            tree = etree.fromstring(content.encode())
             urns = []
             for response in tree.findall(".//{DAV:}response"):
                 href_el = next(iter(response.findall(".//{DAV:}href")), None)
@@ -86,7 +86,7 @@ class WebDavXmlUtils:
         :return: an amount of free space in bytes.
         """
         try:
-            tree = etree.fromstring(content)
+            tree = etree.fromstring(content.encode())
             node = tree.find('.//{DAV:}quota-available-bytes')
             if node is not None:
                 return int(node.text)
@@ -178,7 +178,7 @@ class WebDavXmlUtils:
         :param name: the name of property for finding a value in response
         :return: the value of property if it has been found or None otherwise.
         """
-        tree = etree.fromstring(content)
+        tree = etree.fromstring(content.encode())
         return tree.xpath('//*[local-name() = $name]', name=name)[0].text
 
     @staticmethod
@@ -222,7 +222,7 @@ class WebDavXmlUtils:
         """
         prefix = urlparse(hostname).path
         try:
-            tree = etree.fromstring(content)
+            tree = etree.fromstring(content.encode())
             responses = tree.findall("{DAV:}response")
             n_path = Urn.normalize_path(path)
 
