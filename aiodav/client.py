@@ -609,6 +609,7 @@ class Client(object):
                 buffer.write(block)
                 
             current += len(block)
+            
             if callable(progress):
                 if asyncio.iscoroutinefunction(progress):
                     await progress(current, total, *progress_args)
