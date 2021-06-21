@@ -58,6 +58,6 @@ class Urn(object):
         return result if len(result) < 1 or result[-1] != Urn.separate else result[:-1]
 
     @staticmethod
-    def compare_path(path_a: str, href: str) -> str:
+    def compare_path(path_a: str, href: str) -> bool:
         unqouted_path = Urn.separate + unquote(urlsplit(href).path)
         return Urn.normalize_path(path_a) == Urn.normalize_path(unqouted_path)
