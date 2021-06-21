@@ -3,7 +3,7 @@ import asyncio
 import os
 import shutil
 from types import TracebackType
-from typing import Any, AsyncGenerator, Callable, Coroutine, Dict, Generator, IO, Iterable, Optional, Tuple, Type, Union
+from typing import Any, AsyncGenerator, Callable, Coroutine, Dict, Generator, IO, Iterable, Optional, Tuple, Type, Union, List
 from aiofiles.threadpool.binary import AsyncBufferedIOBase
 
 import aiohttp, aiofiles
@@ -223,7 +223,7 @@ class Client(object):
         self,
         path: Optional[Union[str, "os.PathLike[str]"]] = ROOT,
         get_info: Optional[bool] = False
-    ) -> Union[list[str], list[Dict[str, str]]]:
+    ) -> Union[List[str], List[Dict[str, str]]]:
         """
         Returns list of nested files and directories for remote WebDAV directory by path.
         More information you can find by link http://webdav.org/specs/rfc4918.html#METHOD_PROPFIN
