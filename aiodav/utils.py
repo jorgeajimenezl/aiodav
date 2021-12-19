@@ -6,6 +6,7 @@ import lxml.etree as etree
 from urllib.parse import unquote, urlsplit, urlparse
 from io import BytesIO
 
+
 class WebDavXmlUtils:
     def __init__(self) -> None:
         pass
@@ -36,8 +37,8 @@ class WebDavXmlUtils:
                 info = dict()
                 is_dir = len(response.findall(".//{DAV:}collection")) > 0
                 info = WebDavXmlUtils.get_info_from_response(response)
-                info['isdir'] = is_dir
-                info['path'] = path
+                info["isdir"] = is_dir
+                info["path"] = path
                 infos.append(info)
             return infos
         except etree.XMLSyntaxError:
@@ -87,19 +88,19 @@ class WebDavXmlUtils:
         """
         try:
             tree = etree.fromstring(content.encode())
-            node = tree.find('.//{DAV:}quota-available-bytes')
+            node = tree.find(".//{DAV:}quota-available-bytes")
             if node is not None:
                 return int(node.text)
             else:
-                raise MethodNotSupported(name='free', server=hostname)
+                raise MethodNotSupported(name="free", server=hostname)
         except TypeError:
-            raise MethodNotSupported(name='free', server=hostname)
+            raise MethodNotSupported(name="free", server=hostname)
         except etree.XMLSyntaxError:
-            return -1 # TODO: replace
+            return -1  # TODO: replace
 
     @staticmethod
     def get_info_from_response(response):
-        """ Get information attributes from response
+        """Get information attributes from response
 
         :param response: XML object of response for the remote resource defined by path
         :return: a dictionary of information attributes and them values with following keys:
@@ -110,11 +111,11 @@ class WebDavXmlUtils:
                  `etag`: etag of resource
         """
         find_attributes = {
-            'created': ".//{DAV:}creationdate",
-            'name': ".//{DAV:}displayname",
-            'size': ".//{DAV:}getcontentlength",
-            'modified': ".//{DAV:}getlastmodified",
-            'etag': ".//{DAV:}getetag",
+            "created": ".//{DAV:}creationdate",
+            "name": ".//{DAV:}displayname",
+            "size": ".//{DAV:}getcontentlength",
+            "modified": ".//{DAV:}getlastmodified",
+            "etag": ".//{DAV:}getetag",
         }
         info = dict()
         for (name, value) in find_attributes.items():
@@ -135,7 +136,9 @@ class WebDavXmlUtils:
                  `modified`: date of resource modification,
                  `etag`: etag of resource.
         """
-        response = WebDavXmlUtils.extract_response_for_path(content=content, path=path, hostname=hostname)
+        response = WebDavXmlUtils.extract_response_for_path(
+            content=content, path=path, hostname=hostname
+        )
         return WebDavXmlUtils.get_info_from_response(response)
 
     @staticmethod
@@ -147,7 +150,9 @@ class WebDavXmlUtils:
         :param hostname: the server hostname.
         :return: True in case the remote resource is directory and False otherwise.
         """
-        response = WebDavXmlUtils.extract_response_for_path(content=content, path=path, hostname=hostname)
+        response = WebDavXmlUtils.extract_response_for_path(
+            content=content, path=path, hostname=hostname
+        )
         resource_type = response.find(".//{DAV:}resourcetype")
         if resource_type is None:
             raise MethodNotSupported(name="is_dir", server=hostname)
@@ -166,7 +171,9 @@ class WebDavXmlUtils:
         """
         root = etree.Element("propfind", xmlns="DAV:")
         prop = etree.SubElement(root, "prop")
-        etree.SubElement(prop, option.get('name', ""), xmlns=option.get('namespace', ""))
+        etree.SubElement(
+            prop, option.get("name", ""), xmlns=option.get("namespace", "")
+        )
         tree = etree.ElementTree(root)
         return WebDavXmlUtils.etree_to_string(tree)
 
@@ -179,7 +186,7 @@ class WebDavXmlUtils:
         :return: the value of property if it has been found or None otherwise.
         """
         tree = etree.fromstring(content.encode())
-        return tree.xpath('//*[local-name() = $name]', name=name)[0].text
+        return tree.xpath("//*[local-name() = $name]", name=name)[0].text
 
     @staticmethod
     def create_set_property_batch_request_content(options):
@@ -191,12 +198,14 @@ class WebDavXmlUtils:
                        `value`: (optional) the value of property which will be set. Defaults is empty string.
         :return: the XML string of request content.
         """
-        root_node = etree.Element('propertyupdate', xmlns='DAV:')
-        set_node = etree.SubElement(root_node, 'set')
-        prop_node = etree.SubElement(set_node, 'prop')
+        root_node = etree.Element("propertyupdate", xmlns="DAV:")
+        set_node = etree.SubElement(root_node, "set")
+        prop_node = etree.SubElement(set_node, "prop")
         for option in options:
-            opt_node = etree.SubElement(prop_node, option['name'], xmlns=option.get('namespace', ''))
-            opt_node.text = option.get('value', '')
+            opt_node = etree.SubElement(
+                prop_node, option["name"], xmlns=option.get("namespace", "")
+            )
+            opt_node.text = option.get("value", "")
         tree = etree.ElementTree(root_node)
         return WebDavXmlUtils.etree_to_string(tree)
 
@@ -208,7 +217,7 @@ class WebDavXmlUtils:
         :return: the string of XML.
         """
         buff = BytesIO()
-        tree.write(buff, xml_declaration=True, encoding='UTF-8')
+        tree.write(buff, xml_declaration=True, encoding="UTF-8")
         return buff.getvalue()
 
     @staticmethod
@@ -231,7 +240,9 @@ class WebDavXmlUtils:
 
                 if Urn.compare_path(n_path, href) is True:
                     return resp
-                href_without_prefix = href[len(prefix):] if href.startswith(prefix) else href
+                href_without_prefix = (
+                    href[len(prefix) :] if href.startswith(prefix) else href
+                )
                 if Urn.compare_path(n_path, href_without_prefix) is True:
                     return resp
             raise RemoteResourceNotFound(path)
