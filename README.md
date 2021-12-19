@@ -2,6 +2,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jorgeajimenezl_aiodav&metric=alert_status)](https://sonarcloud.io/dashboard?id=jorgeajimenezl_aiodav)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=jorgeajimenezl_aiodav&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=jorgeajimenezl_aiodav)
 ![PyPI](https://img.shields.io/pypi/v/aiodav)
+![Downloads](https://img.shields.io/pypi/dm/aiodav)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiodav)
 
 A asynchronous WebDAV client that use `asyncio` 
