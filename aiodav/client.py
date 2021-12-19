@@ -77,6 +77,7 @@ class Client(object):
 
     # HTTP headers for different actions
     DEFAULT_HTTP_HEADER = {
+        "upload": ["Accept: */*", "Content-Type: application/x-www-form-urlencoded"],
         "list": ["Accept: */*", "Depth: 1"],
         "free": ["Accept: */*", "Depth: 0", "Content-Type: text/xml"],
         "copy": ["Accept: */*"],
