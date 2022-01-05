@@ -131,7 +131,6 @@ class Client(object):
         proxy_password: Optional[str] = None,
         insecure: Optional[bool] = False,
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        session: Optional[aiohttp.ClientSession] = None,
         **kwargs: Any,
     ) -> None:
         self._hostname = hostname.rstrip(Urn.separate)
@@ -146,7 +145,7 @@ class Client(object):
         )
         self._insecure = insecure
         self.session = (
-            session or
+            kwargs.get("session", None) or
             aiohttp.ClientSession(
             loop=loop,
             timeout=aiohttp.ClientTimeout(total=timeout)
