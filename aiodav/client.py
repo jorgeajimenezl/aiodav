@@ -144,13 +144,16 @@ class Client(object):
             else None
         )
         self._insecure = insecure
-        self.session = aiohttp.ClientSession(
+        self.session = (
+            kwargs.get("session", None) or
+            aiohttp.ClientSession(
             loop=loop,
             timeout=aiohttp.ClientTimeout(total=timeout)
             if timeout
             else DEFAULT_TIMEOUT,
             auth=aiohttp.BasicAuth(login, password) if (login and password) else None,
             connector=kwargs.get("connector", None),
+            )
         )
 
     def _get_headers(
