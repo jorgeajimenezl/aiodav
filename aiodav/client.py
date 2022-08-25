@@ -384,7 +384,7 @@ class Client(object):
 
     async def is_directory(self, path: Union[str, "os.PathLike[str]"]) -> bool:
         """
-        Checks is the remote resource directory.
+        Checks if the remote resource is a directory.
         More information you can find by link http://webdav.org/specs/rfc4918.html#METHOD_PROPFINDL
 
         Parameters:
@@ -836,6 +836,7 @@ class Client(object):
         path: Union[str, "os.PathLike[str]"],
         buffer: Union[IO, AsyncGenerator[bytes, None]],
         buffer_size: Optional[int] = None,
+        overwrite: bool = True,
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = (),
     ) -> None:
@@ -850,6 +851,10 @@ class Client(object):
             buffer (``IO``)
                 IO like object to read the data or a asynchronous generator to get buffer data.
                 In order do you select use a async generator `progress` callback cannot be called.
+
+            overwrite (``bool``)
+                If true the will be overwriten by the new data if the a file with the same path exists. 
+                (Default to true)
 
             progress (``callable``, *optional*):
                 Pass a callback function to view the file transmission progress.
@@ -888,6 +893,9 @@ class Client(object):
         urn = Urn(path)
         if urn.is_dir():
             raise OptionNotValid(name="path", value=path)
+
+        if not overwrite and (await self.exists(urn.path())):
+            return
 
         if not (await self.exists(urn.parent())):
             raise RemoteParentNotFound(urn.path())
@@ -929,6 +937,7 @@ class Client(object):
         self,
         remote_path: Union[str, "os.PathLike[str]"],
         local_path: Union[str, "os.PathLike[str]"],
+        overwrite: bool = True,
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = (),
     ) -> None:
@@ -942,6 +951,10 @@ class Client(object):
 
             local_path (``str``):
                 The path to local file for uploading.
+
+            overwrite (``bool``)
+                If true the will be overwriten by the new data if the a file with the same path exists. 
+                (Default to true)
 
             progress (``callable``, *optional*):
                 Pass a callback function to view the file transmission progress.
@@ -982,6 +995,7 @@ class Client(object):
                 path=remote_path,
                 buffer=file,
                 buffer_size=size,
+                overwrite=overwrite,
                 progress=progress,
                 progress_args=progress_args,
             )
@@ -990,6 +1004,7 @@ class Client(object):
         self,
         remote_path: Union[str, "os.PathLike[str]"],
         local_path: Union[str, "os.PathLike[str]"],
+        overwrite: bool = True,
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = (),
     ) -> None:
@@ -1007,6 +1022,10 @@ class Client(object):
 
             local_path (``str``):
                 The path to local directory for uploading.
+
+            overwrite (``bool``)
+                If true the will be overwriten by the new data if the directory with the same path exists. 
+                (Default to true)
 
             progress (``callable``, *optional*):
                 Pass a callback function to view the file transmission progress.
@@ -1040,8 +1059,11 @@ class Client(object):
         if not os.path.exists(local_path):
             raise LocalResourceNotFound(local_path)
 
-        if await self.exists(urn.path()):
-            await self.unlink(urn.path())
+        if (await self.exists(urn.path())):
+            if overwrite:
+                await self.unlink(urn.path())
+            else:
+                return
 
         await self.create_directory(remote_path)
 
