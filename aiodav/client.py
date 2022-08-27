@@ -1186,7 +1186,7 @@ class Client(object):
         if not (await self.check(urn.path())):
             raise RemoteResourceNotFound(urn.path())
 
-        data = WebDavXmlUtils.create_set_property_batch_request_content(option)
+        data = WebDavXmlUtils.create_set_property_batch_request_content([option])
         await self._execute_request(action="set_property", path=urn.quote(), data=data)
 
     async def close(self):
