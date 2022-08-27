@@ -1183,7 +1183,7 @@ class Client(object):
         """
 
         urn = Urn(path)
-        if not (await self.check(urn.path())):
+        if not (await self.exists(urn.path())):
             raise RemoteResourceNotFound(urn.path())
 
         data = WebDavXmlUtils.create_set_property_batch_request_content([option])
