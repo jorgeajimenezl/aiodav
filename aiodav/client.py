@@ -19,6 +19,7 @@ from typing import (
     List,
 )
 from aiofiles.threadpool.binary import AsyncBufferedIOBase
+from aiohttp.streams import AsyncStreamIterator
 
 import aiohttp
 import aiofiles
@@ -145,16 +146,13 @@ class Client(object):
             else None
         )
         self._insecure = insecure
-        self.session = (
-            kwargs.get("session", None) or
-            aiohttp.ClientSession(
+        self.session = kwargs.get("session", None) or aiohttp.ClientSession(
             loop=loop,
             timeout=aiohttp.ClientTimeout(total=timeout)
             if timeout
             else DEFAULT_TIMEOUT,
             auth=aiohttp.BasicAuth(login, password) if (login and password) else None,
             connector=kwargs.get("connector", None),
-            )
         )
 
     def _get_headers(
@@ -532,7 +530,7 @@ class Client(object):
 
         headers = {"Destination": self._get_url(urn_to.quote())}
         if await self.is_directory(urn_from.path()):
-            headers["Depth"] = depth
+            headers["Depth"] = str(depth)
 
         await self._execute_request(
             action="copy", path=urn_from.quote(), headers_ext=headers
@@ -540,7 +538,7 @@ class Client(object):
 
     async def download_iter(
         self, path: Union[str, "os.PathLike[str]"]
-    ) -> Generator[bytes, None, None]:
+    ) -> AsyncStreamIterator[bytes]:
         """
         Downloads file from server and return content in generator.
         More information you can find by link http://webdav.org/specs/rfc4918.html#rfc.section.9.4
@@ -631,7 +629,7 @@ class Client(object):
             raise RemoteResourceNotFound(urn.path())
 
         response = await self._execute_request("download", urn.quote())
-        total = int(response.headers["content-length"])
+        total = response.content_length
         current = 0
 
         if callable(progress):
@@ -854,7 +852,7 @@ class Client(object):
                 In order do you select use a async generator `progress` callback cannot be called.
 
             overwrite (``bool``)
-                If true the will be overwriten by the new data if the a file with the same path exists. 
+                If true the will be overwriten by the new data if the a file with the same path exists.
                 (Default to true)
 
             progress (``callable``, *optional*):
@@ -954,7 +952,7 @@ class Client(object):
                 The path to local file for uploading.
 
             overwrite (``bool``)
-                If true the will be overwriten by the new data if the a file with the same path exists. 
+                If true the will be overwriten by the new data if the a file with the same path exists.
                 (Default to true)
 
             progress (``callable``, *optional*):
@@ -1025,7 +1023,7 @@ class Client(object):
                 The path to local directory for uploading.
 
             overwrite (``bool``)
-                If true the will be overwriten by the new data if the directory with the same path exists. 
+                If true the will be overwriten by the new data if the directory with the same path exists.
                 (Default to true)
 
             progress (``callable``, *optional*):
@@ -1060,7 +1058,7 @@ class Client(object):
         if not os.path.exists(local_path):
             raise LocalResourceNotFound(local_path)
 
-        if (await self.exists(urn.path())):
+        if await self.exists(urn.path()):
             if overwrite:
                 await self.unlink(urn.path())
             else:
