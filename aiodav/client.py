@@ -373,14 +373,6 @@ class Client(object):
             return True
         return response.status in (200, 201)
 
-    async def _check_remote_resource(
-        self, path: Union[str, "os.PathLike[str]"], urn: Urn
-    ) -> None:
-        if not (await self.exists(urn.path())) and not (
-            await self.exists(Urn(path, directory=True).path())
-        ):
-            raise RemoteResourceNotFound(path)
-
     async def is_directory(self, path: Union[str, "os.PathLike[str]"]) -> bool:
         """
         Checks if the remote resource is a directory.
@@ -396,7 +388,6 @@ class Client(object):
 
         urn = Urn(path)
         parent_urn = Urn(urn.parent())
-        await self._check_remote_resource(path, urn)
 
         response = await self._execute_request(action="info", path=parent_urn.quote())
         text = await response.text()
@@ -425,7 +416,6 @@ class Client(object):
         """
 
         urn = Urn(path)
-        await self._check_remote_resource(path, urn)
 
         response = await self._execute_request(action="info", path=urn.quote())
         text = await response.text()
@@ -625,11 +615,14 @@ class Client(object):
         if await self.is_directory(urn.path()):
             raise OptionNotValid(name="path", value=path)
 
-        if not (await self.exists(urn.path())):
-            raise RemoteResourceNotFound(urn.path())
-
+        info = await self.info(urn.path())
         response = await self._execute_request("download", urn.quote())
-        total = response.content_length
+
+        try:
+            total = int(info["size"])
+        except:
+            total = response.content_length
+            
         current = 0
 
         if callable(progress):
