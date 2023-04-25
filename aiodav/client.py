@@ -565,7 +565,7 @@ class Client(object):
         buffer: IO,
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = (),
-    ) -> None:
+    ) -> Dict[str, str]:
         """
         Downloads file from server and writes it in buffer.
         More information you can find by link http://webdav.org/specs/rfc4918.html#rfc.section.9.4
@@ -598,6 +598,9 @@ class Client(object):
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
+        Returns:
+            :obj:`Dict[str, str]`: Return a dictionary with file information
+
         Example:
             .. code-block:: python
 
@@ -618,11 +621,7 @@ class Client(object):
         info = await self.info(urn.path())
         response = await self._execute_request("download", urn.quote())
 
-        try:
-            total = int(info["size"])
-        except:
-            total = response.content_length
-            
+        total = int(info["size"])         
         current = 0
 
         if callable(progress):
@@ -645,13 +644,15 @@ class Client(object):
                 else:
                     progress(current, total, *progress_args)
 
+        return info
+
     async def download_file(
         self,
         remote_path: Union[str, "os.PathLike[str]"],
         local_path: Union[str, "os.PathLike[str]"],
         progress: Optional[Callable[[int, int, Tuple], None]] = None,
         progress_args: Optional[Tuple] = (),
-    ) -> None:
+    ) -> Dict[str, str]:
         """
         Downloads file from server and write to a file.
         More information you can find by link http://webdav.org/specs/rfc4918.html#rfc.section.9.4
@@ -684,6 +685,9 @@ class Client(object):
                 Extra custom arguments as defined in the ``progress_args`` parameter.
                 You can either keep ``*args`` or add every single extra argument in your function signature.
 
+        Returns:
+            :obj:`Dict[str, str]`: Return a dictionary with file information
+
         Example:
             .. code-block:: python
 
@@ -697,7 +701,7 @@ class Client(object):
         """
 
         async with aiofiles.open(local_path, "wb") as file:
-            await self.download_to(
+            return await self.download_to(
                 remote_path, file, progress=progress, progress_args=progress_args
             )
 
