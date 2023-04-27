@@ -621,7 +621,7 @@ class Client(object):
         info = await self.info(urn.path())
         response = await self._execute_request("download", urn.quote())
 
-        total = int(info["size"])         
+        total = int(info["size"])
         current = 0
 
         if callable(progress):
@@ -1245,6 +1245,43 @@ class Resource(object):
 
         await self.client.move(source=old_path, destination=new_path)
         self.urn = Urn(new_path)
+
+    async def download(
+        self,
+        path: Union[str, "os.PathLike[str]"],
+        progress: Optional[Callable[[int, int, Tuple], None]] = None,
+        progress_args: Optional[Tuple] = (),
+    ) -> None:
+        """
+        Download the resourse to local
+
+        Parameters:
+            path (``str``):
+                The path to save resource locally.
+
+            progress (``callable``, *optional*):
+                Pass a callback function to view the file transmission progress.
+                The function must take *(current, total)* as positional arguments (look at Other Parameters below for a
+                detailed description) and will be called back each time a new file chunk has been successfully
+                transmitted.
+
+            progress_args (``tuple``, *optional*):
+                Extra custom arguments for the progress callback function.
+                You can pass anything you need to be available in the progress callback scope.
+
+        Other Parameters:
+            current (``int``):
+                The amount of bytes transmitted so far.
+
+            total (``int``):
+                The total size of the file.
+
+            *args (``tuple``, *optional*):
+                Extra custom arguments as defined in the ``progress_args`` parameter.
+                You can either keep ``*args`` or add every single extra argument in your function signature.
+        """
+
+        await self.client.download(self.urn.path(), path)
 
     async def move(self, path: Union[str, "os.PathLike[str]"]) -> None:
         """

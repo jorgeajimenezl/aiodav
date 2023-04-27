@@ -1,26 +1,31 @@
 # Python Async WebDAV Client
+
 ![PyPI](https://img.shields.io/pypi/v/aiodav)
-![Downloads](https://img.shields.io/pypi/dm/aiodav)
+[![Downloads](https://static.pepy.tech/badge/aiodav)](https://pepy.tech/project/aiodav)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/aiodav)
 
-A asynchronous WebDAV client that use `asyncio` 
+A asynchronous WebDAV client that use `asyncio`
 
 > Based on [webdavclient3](https://github.com/ezhov-evgeny/webdav-client-python-3)
 
 ## Installation
+
 We periodically publish source code and wheels [on PyPI](https://pypi.python.org/pypi/aiodav).
+
 ```bash
-$ pip install aiodav
+pip install aiodav
 ```
 
 For install the most updated version:
+
 ```bash
-$ git clone https://github.com/jorgeajimenezl/aiodav.git
-$ cd aiodav
-$ pip install -e .
+git clone https://github.com/jorgeajimenezl/aiodav.git
+cd aiodav
+pip install -e .
 ```
 
 ## Getting started
+
 ```python
 from aiodav import Client
 import asyncio
@@ -41,4 +46,5 @@ asyncio.run(main())
 ```
 
 ## License
+
 [MIT License](./LICENSE)
