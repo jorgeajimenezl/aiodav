@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "aiodav"
 license = { text = "MIT" }
 description = "A Python Async WebDAV Client"
-requires-python = ">=3.5"
+requires-python = ">=3.6"
 keywords = ["webdav", "client", "files", "internet", "download", "upload"]
 authors = [{ name = "Jorge Alejandro Jiménez Luna", email = "jorgeajimenezl17@gmail.com" }]
 urls = { homepage = "https://github.com/jorgeajimenezl/aiodav" }
@@ -16,7 +16,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
