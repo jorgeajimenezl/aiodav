@@ -1117,14 +1117,14 @@ class Client(object):
         """
 
         if os.path.isdir(local_path):
-            self.upload_directory(
+            await self.upload_directory(
                 local_path=local_path,
                 remote_path=remote_path,
                 progress=progress,
                 progress_args=progress_args,
             )
         else:
-            self.upload_file(
+            await self.upload_file(
                 local_path=local_path,
                 remote_path=remote_path,
                 progress=progress,
