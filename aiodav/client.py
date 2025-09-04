@@ -215,10 +215,11 @@ class Client(object):
             if response.status == 405:
                 raise MethodNotSupported(name=action, server=self._hostname)
             if response.status >= 400:
+                error_message = await response.text()
                 raise ResponseErrorCode(
                     url=self._get_url(path),
                     code=response.status,
-                    message=response.content,
+                    message=error_message,
                 )
 
             return response
