@@ -928,7 +928,13 @@ class Client(object):
                 action="upload", path=urn.quote(), data=file_sender(buffer)
             )
         else:
-            await self._execute_request(action="upload", path=urn.quote(), data=buffer)
+            # Read file content into memory to avoid issues with aiohttp treating
+            # aiofiles objects as async iterators, which can cause empty uploads
+            if isinstance(buffer, AsyncBufferedIOBase):
+                data = await buffer.read()
+            else:
+                data = buffer
+            await self._execute_request(action="upload", path=urn.quote(), data=data)
 
     async def upload_file(
         self,
