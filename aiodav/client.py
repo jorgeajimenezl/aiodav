@@ -928,7 +928,21 @@ class Client(object):
                 action="upload", path=urn.quote(), data=file_sender(buffer)
             )
         else:
-            await self._execute_request(action="upload", path=urn.quote(), data=buffer)
+            # Use chunked reading to avoid memory issues with large files
+            # and prevent aiohttp from treating aiofiles objects as async iterators
+            if isinstance(buffer, AsyncBufferedIOBase):
+                async def chunk_sender(buff: AsyncBufferedIOBase):
+                    while True:
+                        chunk = await buff.read(self._chunk_size)
+                        if not chunk:
+                            break
+                        yield chunk
+                
+                await self._execute_request(
+                    action="upload", path=urn.quote(), data=chunk_sender(buffer)
+                )
+            else:
+                await self._execute_request(action="upload", path=urn.quote(), data=buffer)
 
     async def upload_file(
         self,
